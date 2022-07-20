@@ -3,6 +3,10 @@ import java.awt.*;
 public class Paddle {
     private Rectangle rectangle;
 
+    public Paddle(Rectangle rectangle) {
+        this.rectangle = rectangle;
+    }
+
     public Rectangle getRectangle() {
         return rectangle;
     }
@@ -22,7 +26,5 @@ public class Paddle {
         }
     }
 
-    public Paddle(Rectangle rectangle) {
-        this.rectangle = rectangle;
-    }
+
 }

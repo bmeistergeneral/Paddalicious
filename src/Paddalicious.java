@@ -8,6 +8,7 @@ import java.awt.event.MouseMotionListener;
 public class Paddalicious extends JPanel implements MouseMotionListener, ActionListener {
 
     Paddle paddle;
+    Ball ball;
     int gameWidth;
     int gameHeight;
 
@@ -25,6 +26,7 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         Rectangle paddleRectangle = new Rectangle((gameWidth / 2) - (paddleWidth / 2), (gameHeight - paddleHeight - margin), paddleWidth, paddleHeight);
 
         paddle = new Paddle(paddleRectangle);
+        ball = new Ball(400, 240, 20);
 
         addMouseMotionListener(this);
 
@@ -41,6 +43,10 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         g.setColor(Color.red);
         Rectangle tempPaddleRect = paddle.getRectangle();
         g.fillRect(tempPaddleRect.x, tempPaddleRect.y, tempPaddleRect.width, tempPaddleRect.height);
+
+        // Ball
+        g.setColor(Color.BLUE);
+        g.fillOval(ball.getX(),ball.getY(), ball.getDiameter(), ball.getDiameter());
     }
 
     public void mouseMoved(MouseEvent e) {
@@ -51,8 +57,36 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         // do nothing
     }
 
+    private void checkForWallBounces() {
+
+        if (ball.getX() <= 0) {
+            ball.bounceOffVerticalSurface();
+        } else if (ball.getX() >= gameWidth) {
+            ball.bounceOffVerticalSurface();
+        }
+
+        if (ball.getY() <= 0) {
+            ball.bounceOffHorizontalSurface();
+        } else if (ball.getY() >= gameHeight) {
+            // you dead!
+        }
+    }
+
+    private void checkForPaddleBounces() {
+        if (ball.getY() + ball.getDiameter() >= paddle.getRectangle().getMinY()) {
+            if (ball.getX() >= paddle.getRectangle().getMinX() && ball.getX() <= paddle.getRectangle().getMaxX()) {
+                ball.bounceOffHorizontalSurface();
+                ball.changeAngle((-10 + (int)(Math.random() * ((10 - -10) + 1))));
+            }
+        }
+    }
+
     public void actionPerformed(ActionEvent e) {
         timer.start();
+        ball.update(timerDuration);
+        checkForWallBounces();
+        checkForPaddleBounces();
+
         repaint();
     }
 }
