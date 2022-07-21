@@ -59,15 +59,23 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
     private void checkForWallBounces() {
 
+        // left wall
         if (ball.getX() <= 0) {
-            ball.bounceOffVerticalSurface();
-        } else if (ball.getX() >= gameWidth) {
             ball.bounceOffVerticalSurface();
         }
 
+        // right wall
+        if (ball.getX() + ball.getDiameter() >= gameWidth) {
+            ball.bounceOffVerticalSurface();
+        }
+
+        // ceiling
         if (ball.getY() <= 0) {
             ball.bounceOffHorizontalSurface();
-        } else if (ball.getY() >= gameHeight) {
+        }
+
+        // pit
+        if (ball.getY() >= gameHeight) {
             // you dead!
         }
     }
