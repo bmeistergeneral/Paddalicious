@@ -2,7 +2,7 @@ public class Ball {
     private double x;
     private double y;
     private int diameter;
-    private int angle = 290;
+    private int angle = 30;
     private double speed = 0.3;
 
     public Ball(int x, int y, int diameter) {
@@ -25,33 +25,66 @@ public class Ball {
         speed += speedIncrease;
     }
 
+    private void cleanUpAngle() {
+
+        if (angle < 0) {
+            angle += 360;
+        }
+
+        if (angle > 360) {
+            angle = angle % 360;
+        }
+    }
+
     public void changeAngle(int degrees) {
         angle += degrees;
+        cleanUpAngle();
     }
 
     public void bounceOffHorizontalSurface() {
-        double dy = speed * Math.sin(Math.toRadians(angle));
-
-        dy *= -1;
-
-        double newAngle = Math.asin(dy / speed);
-
-        angle = (int) Math.toDegrees(newAngle);
+        bounceOffSurface(false);
     }
 
     public void bounceOffVerticalSurface() {
-        double dx = speed * Math.cos(Math.toRadians(angle));
+        bounceOffSurface(true);
+    }
 
-        dx *= -1;
+    public void bounceOffSurface(boolean vertical) {
 
-        double newAngle = Math.acos(dx / speed);
+        double dx = calculateXComponentOfPath(angle, speed);
+        double dy = calculateYComponentOfPath(angle, speed);
 
-        angle = (int) Math.toDegrees(newAngle);
+        if (vertical) {
+            dx *= -1;
+        } else {
+            dy *= -1;
+        }
+
+        angle = calculateAngleBasedOnComponents(dx, dy);
+        cleanUpAngle();
+    }
+
+    private double calculateXComponentOfPath(int angleInDegrees, double magnitude) {
+        double angleInRadians = Math.toRadians(angleInDegrees - 90);
+
+        return magnitude * Math.cos(angleInRadians);
+    }
+
+    private double calculateYComponentOfPath(int angleInDegrees, double magnitude) {
+        double angleInRadians = Math.toRadians(angleInDegrees - 90);
+
+        return magnitude * Math.sin(angleInRadians);
+    }
+
+    private int calculateAngleBasedOnComponents(double xComponent, double yComponent) {
+        double angleInRadians = Math.atan2(yComponent, xComponent);
+
+        return (int) Math.toDegrees(angleInRadians) + 90;
     }
 
     public void update(double time) {
-        double dx = time * (speed * Math.cos(Math.toRadians(angle)));
-        double dy = time * (speed * Math.sin(Math.toRadians(angle)));
+        double dx = time * calculateXComponentOfPath(angle, speed);
+        double dy = time * calculateYComponentOfPath(angle, speed);
 
         x += dx;
         y += dy;
