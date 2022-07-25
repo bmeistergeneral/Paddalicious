@@ -25,6 +25,4 @@ public class Paddle {
             rectangle.x = adjustedIncomingX;
         }
     }
-
-
 }

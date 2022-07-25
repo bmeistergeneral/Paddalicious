@@ -8,11 +8,11 @@ public class Main {
         int gameHeight = 600;
 
         JFrame jframe = new JFrame();
-        Paddalicious paddle = new Paddalicious(gameWidth, gameHeight);
+        Paddalicious game = new Paddalicious(gameWidth, gameHeight);
 
         jframe.setBounds(0, 0, gameWidth, gameHeight);
         jframe.setTitle("Paddalicious");
-        jframe.add(paddle);
+        jframe.add(game);
         jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jframe.setVisible(true);
     }

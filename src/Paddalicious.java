@@ -7,10 +7,11 @@ import java.awt.event.MouseMotionListener;
 
 public class Paddalicious extends JPanel implements MouseMotionListener, ActionListener {
 
-    Paddle paddle;
-    Ball ball;
-    int gameWidth;
-    int gameHeight;
+    private Paddle paddle;
+    private Ball ball;
+    private Brick brick;
+    private int gameWidth;
+    private int gameHeight;
 
     private Timer timer;
     private int timerDuration = 6;
@@ -25,8 +26,16 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
         Rectangle paddleRectangle = new Rectangle((gameWidth / 2) - (paddleWidth / 2), (gameHeight - paddleHeight - margin), paddleWidth, paddleHeight);
 
+        // create the paddle and ball
         paddle = new Paddle(paddleRectangle);
         ball = new Ball(400, 240, 20);
+
+        // create the bricks
+        Rectangle tempRect = new Rectangle(10, 10, 50, 30);
+        brick = new Brick(tempRect, 2);
+//        for (int i = 1; i<=32; i++) {
+//
+//        }
 
         addMouseMotionListener(this);
 
@@ -36,7 +45,7 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
     public void paint(Graphics g) {
         // Background
-        g.setColor(Color.GREEN);
+        g.setColor(Color.white);
         g.fillRect(0,0,800,600);
 
         // Paddle
@@ -47,6 +56,11 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         // Ball
         g.setColor(Color.BLUE);
         g.fillOval(ball.getX(),ball.getY(), ball.getDiameter(), ball.getDiameter());
+
+        // Bricks
+        g.setColor(brick.getColor());
+        Rectangle tempBrickRect = brick.getRectangle();
+        g.fillRect(tempBrickRect.x, tempBrickRect.y, tempBrickRect.width, tempBrickRect.height);
     }
 
     public void mouseMoved(MouseEvent e) {
