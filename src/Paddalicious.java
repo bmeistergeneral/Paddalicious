@@ -4,12 +4,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
 
 public class Paddalicious extends JPanel implements MouseMotionListener, ActionListener {
 
     private Paddle paddle;
     private Ball ball;
-    private Brick brick;
+    private ArrayList<Brick> bricks;
     private int gameWidth;
     private int gameHeight;
 
@@ -22,20 +23,44 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
         int paddleWidth = 130;
         int paddleHeight = 20;
-        int margin = 40;
+        int paddleMargin = 40;
 
-        Rectangle paddleRectangle = new Rectangle((gameWidth / 2) - (paddleWidth / 2), (gameHeight - paddleHeight - margin), paddleWidth, paddleHeight);
+        Rectangle paddleRectangle = new Rectangle((gameWidth / 2) - (paddleWidth / 2), (gameHeight - paddleHeight - paddleMargin), paddleWidth, paddleHeight);
 
         // create the paddle and ball
         paddle = new Paddle(paddleRectangle);
         ball = new Ball(400, 240, 20);
 
         // create the bricks
-        Rectangle tempRect = new Rectangle(10, 10, 50, 30);
-        brick = new Brick(tempRect, 2);
-//        for (int i = 1; i<=32; i++) {
-//
-//        }
+        bricks = new ArrayList<Brick>(32);
+
+        int brickMargin = 4;
+        int rows = 4;
+        int columns = 8;
+        int brickWidth = (gameWidth / columns) - (brickMargin);
+        int brickHeight = 30;
+
+        for (int j = 1; j<=rows; j++) {
+            for (int i = 1; i<=columns; i++) {
+                int tempX = (i * brickMargin) + ((i - 1) * brickWidth) - (brickMargin / 2);
+                int tempY = (j * brickMargin) + ((j - 1) * brickHeight);
+
+                Rectangle tempRect = new Rectangle(tempX, tempY, brickWidth, brickHeight);
+
+                int tempLives;
+
+                if (j == 1) {
+                    tempLives = 3;
+                } else if (j == 2) {
+                    tempLives = 2;
+                } else {
+                    tempLives = 1;
+                }
+
+                Brick tempBrick = new Brick(tempRect, tempLives);
+                bricks.add(tempBrick);
+            }
+        }
 
         addMouseMotionListener(this);
 
@@ -58,9 +83,24 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         g.fillOval(ball.getX(),ball.getY(), ball.getDiameter(), ball.getDiameter());
 
         // Bricks
-        g.setColor(brick.getColor());
-        Rectangle tempBrickRect = brick.getRectangle();
-        g.fillRect(tempBrickRect.x, tempBrickRect.y, tempBrickRect.width, tempBrickRect.height);
+        for (Brick brick: bricks) {
+            g.setColor(brick.getColor());
+            Rectangle tempBrickRect = brick.getRectangle();
+            g.fillRect(tempBrickRect.x, tempBrickRect.y, tempBrickRect.width, tempBrickRect.height);
+        }
+
+        // for debugging
+//        drawGrid(g);
+    }
+
+    private void drawGrid(Graphics g) {
+        for (int i = 0; i < gameWidth; i++) {
+
+            if (i % 100 == 0) {
+                g.setColor(Color.black);
+                g.drawLine(i, 0, i, gameHeight);
+            }
+        }
     }
 
     public void mouseMoved(MouseEvent e) {
