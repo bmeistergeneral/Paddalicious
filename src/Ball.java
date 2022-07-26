@@ -1,3 +1,5 @@
+import java.awt.*;
+
 public class Ball {
     private double x;
     private double y;
@@ -19,6 +21,9 @@ public class Ball {
     }
     public int getDiameter() {
         return diameter;
+    }
+    public Rectangle getRectangle() {
+        return new Rectangle(getX(), getY(), diameter, diameter);
     }
 
     public void increaseSpeed(double speedIncrease) {

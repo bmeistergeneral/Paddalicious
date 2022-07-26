@@ -84,9 +84,11 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
         // Bricks
         for (Brick brick: bricks) {
-            g.setColor(brick.getColor());
-            Rectangle tempBrickRect = brick.getRectangle();
-            g.fillRect(tempBrickRect.x, tempBrickRect.y, tempBrickRect.width, tempBrickRect.height);
+            if (!brick.isDestroyed()) {
+                g.setColor(brick.getColor());
+                Rectangle tempBrickRect = brick.getRectangle();
+                g.fillRect(tempBrickRect.x, tempBrickRect.y, tempBrickRect.width, tempBrickRect.height);
+            }
         }
 
         // for debugging
@@ -111,7 +113,7 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         // do nothing
     }
 
-    private void checkForWallBounces() {
+    private void checkForWallCollisions() {
 
         // left wall
         if (ball.getX() <= 0) {
@@ -134,7 +136,7 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         }
     }
 
-    private void checkForPaddleBounces() {
+    private void checkForPaddleCollisions() {
         if (ball.getY() + ball.getDiameter() >= paddle.getRectangle().getMinY()) {
             if (ball.getX() >= paddle.getRectangle().getMinX() && ball.getX() <= paddle.getRectangle().getMaxX()) {
                 ball.bounceOffHorizontalSurface();
@@ -143,12 +145,43 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         }
     }
 
+    private void checkForBrickCollisions() {
+        double topOfBall = ball.getRectangle().getMinY();
+        double bottomOfBall = ball.getRectangle().getMaxY();
+        double rightOfBall = ball.getRectangle().getMaxX();
+        double leftOfBall = ball.getRectangle().getMinX();
+
+        for (Brick brick : bricks) {
+            if (!brick.isDestroyed()) {
+                if (brick.getRectangle().intersects(ball.getRectangle())) {
+
+                    brick.brickWasHit();
+
+                    double topOfBrick = brick.getRectangle().getMinY();
+                    double bottomOfBrick = brick.getRectangle().getMaxY();
+                    double rightOfBrick = brick.getRectangle().getMaxX();
+                    double leftOfBrick = brick.getRectangle().getMinX();
+
+                    if (bottomOfBall > topOfBrick) {
+                        ball.bounceOffHorizontalSurface();
+                    } else if (rightOfBall > leftOfBrick) {
+                        ball.bounceOffVerticalSurface();
+                    } else if (leftOfBall < rightOfBrick) {
+                        ball.bounceOffVerticalSurface();
+                    } else if (topOfBall < bottomOfBrick) {
+                        ball.bounceOffHorizontalSurface();
+                    }
+                }
+            }
+        }
+    }
+
     public void actionPerformed(ActionEvent e) {
         timer.start();
         ball.update(timerDuration);
-        checkForWallBounces();
-        checkForPaddleBounces();
-
+        checkForWallCollisions();
+        checkForPaddleCollisions();
+        checkForBrickCollisions();
         repaint();
     }
 }
