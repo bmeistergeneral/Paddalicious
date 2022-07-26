@@ -117,17 +117,17 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
         // left wall
         if (ball.getX() <= 0) {
-            ball.bounceOffVerticalSurface();
+            ball.bounceOffTheRight(0);
         }
 
         // right wall
         if (ball.getX() + ball.getDiameter() >= gameWidth) {
-            ball.bounceOffVerticalSurface();
+            ball.bounceOffTheLeft(gameWidth);
         }
 
         // ceiling
         if (ball.getY() <= 0) {
-            ball.bounceOffHorizontalSurface();
+            ball.bounceOffTheBottom(0);
         }
 
         // pit
@@ -139,37 +139,48 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
     private void checkForPaddleCollisions() {
         if (ball.getY() + ball.getDiameter() >= paddle.getRectangle().getMinY()) {
             if (ball.getX() >= paddle.getRectangle().getMinX() && ball.getX() <= paddle.getRectangle().getMaxX()) {
-                ball.bounceOffHorizontalSurface();
+                ball.bounceOffTheTop(paddle.getRectangle().getMinY());
                 ball.changeAngle((-10 + (int)(Math.random() * ((10 - -10) + 1))));
             }
         }
     }
 
     private void checkForBrickCollisions() {
-        double topOfBall = ball.getRectangle().getMinY();
-        double bottomOfBall = ball.getRectangle().getMaxY();
-        double rightOfBall = ball.getRectangle().getMaxX();
-        double leftOfBall = ball.getRectangle().getMinX();
+
+        int midXOfBall = ball.getX() + (ball.getDiameter() / 2);
+        int midYOfBall = ball.getY() + (ball.getDiameter() / 2);
+
+        Point topOfBall     = new Point(midXOfBall, (int) ball.getRectangle().getMinY());
+        Point bottomOfBall  = new Point(midXOfBall, (int) ball.getRectangle().getMaxY());
+        Point leftOfBall    = new Point((int) ball.getRectangle().getMinX(), midYOfBall);
+        Point rightOfBall   = new Point((int) ball.getRectangle().getMaxX(), midYOfBall);
 
         for (Brick brick : bricks) {
             if (!brick.isDestroyed()) {
                 if (brick.getRectangle().intersects(ball.getRectangle())) {
+                    
+                    // ball approaching the brick from the top
+                    if (brick.getRectangle().contains(bottomOfBall)) {
+                        ball.bounceOffTheTop(brick.getRectangle().getMinY());
+                        brick.brickWasHit();
+                    }
 
-                    brick.brickWasHit();
+                    // ball approaching the brick from the left
+                    if (brick.getRectangle().contains(rightOfBall)) {
+                        ball.bounceOffTheLeft(brick.getRectangle().getMinX());
+                        brick.brickWasHit();
+                    }
 
-                    double topOfBrick = brick.getRectangle().getMinY();
-                    double bottomOfBrick = brick.getRectangle().getMaxY();
-                    double rightOfBrick = brick.getRectangle().getMaxX();
-                    double leftOfBrick = brick.getRectangle().getMinX();
+                    // ball approaching the brick from the right
+                    if (brick.getRectangle().contains(leftOfBall)) {
+                        ball.bounceOffTheRight(brick.getRectangle().getMaxX());
+                        brick.brickWasHit();
+                    }
 
-                    if (bottomOfBall > topOfBrick) {
-                        ball.bounceOffHorizontalSurface();
-                    } else if (rightOfBall > leftOfBrick) {
-                        ball.bounceOffVerticalSurface();
-                    } else if (leftOfBall < rightOfBrick) {
-                        ball.bounceOffVerticalSurface();
-                    } else if (topOfBall < bottomOfBrick) {
-                        ball.bounceOffHorizontalSurface();
+                    // ball approaching the brick from the bottom
+                    if (brick.getRectangle().contains(topOfBall)) {
+                        ball.bounceOffTheBottom(brick.getRectangle().getMaxY());
+                        brick.brickWasHit();
                     }
                 }
             }
