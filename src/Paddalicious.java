@@ -147,7 +147,8 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
     }
 
     private void checkForPaddleCollisions() {
-        if (ball.getY() + ball.getDiameter() >= paddle.getRectangle().getMinY()) {
+        if (ball.getRectangle().getMaxY() >= paddle.getRectangle().getMinY() &&
+            ball.getRectangle().getMinY() < paddle.getRectangle().getMaxY()) {
             if (ball.getX() >= paddle.getRectangle().getMinX() && ball.getX() <= paddle.getRectangle().getMaxX()) {
                 ball.bounceOffTheTop(paddle.getRectangle().getMinY());
                 ball.changeAngle((-10 + (int)(Math.random() * ((10 - -10) + 1))));
