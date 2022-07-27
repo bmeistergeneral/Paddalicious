@@ -17,6 +17,8 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
     private Timer timer;
     private int timerDuration = 6;
 
+    private boolean isAlive = true;
+
     public Paddalicious(int gameWidth, int gameHeight) {
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
@@ -79,8 +81,14 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         g.fillRect(tempPaddleRect.x, tempPaddleRect.y, tempPaddleRect.width, tempPaddleRect.height);
 
         // Ball
-        g.setColor(Color.BLUE);
-        g.fillOval(ball.getX(),ball.getY(), ball.getDiameter(), ball.getDiameter());
+        if (isAlive) {
+            g.setColor(Color.BLUE);
+            g.fillOval(ball.getX(),ball.getY(), ball.getDiameter(), ball.getDiameter());
+        } else {
+            g.setColor(Color.black);
+            g.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+            g.drawString("You Dead!", gameWidth / 2, gameHeight / 2);
+        }
 
         // Bricks
         for (Brick brick: bricks) {
@@ -133,6 +141,8 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         // pit
         if (ball.getY() >= gameHeight) {
             // you dead!
+            isAlive = false;
+            timer.stop();
         }
     }
 
@@ -158,7 +168,7 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         for (Brick brick : bricks) {
             if (!brick.isDestroyed()) {
                 if (brick.getRectangle().intersects(ball.getRectangle())) {
-                    
+
                     // ball approaching the brick from the top
                     if (brick.getRectangle().contains(bottomOfBall)) {
                         ball.bounceOffTheTop(brick.getRectangle().getMinY());
@@ -188,11 +198,15 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
     }
 
     public void actionPerformed(ActionEvent e) {
-        timer.start();
-        ball.update(timerDuration);
-        checkForWallCollisions();
-        checkForPaddleCollisions();
-        checkForBrickCollisions();
+
+        if (isAlive) {
+            timer.start();
+            ball.update(timerDuration);
+            checkForWallCollisions();
+            checkForPaddleCollisions();
+            checkForBrickCollisions();
+        }
+
         repaint();
     }
 }
