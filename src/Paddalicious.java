@@ -152,13 +152,38 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
     }
 
     private void checkForPaddleCollisions() {
-        if (ball.getRectangle().getMaxY() >= paddle.getRectangle().getMinY() &&
-            ball.getRectangle().getMinY() < paddle.getRectangle().getMaxY()) {
-            if (ball.getX() >= paddle.getRectangle().getMinX() && ball.getX() <= paddle.getRectangle().getMaxX()) {
-                ball.bounceOffTheTop(paddle.getRectangle().getMinY());
-                ball.changeAngle((-10 + (int)(Math.random() * ((10 - -10) + 1))));
+
+        if (ball.getRectangle().intersects(paddle.getRectangle())) {
+
+            double bottomMiddleOfBall = ball.getX() + (ball.getDiameter() / 2);
+
+            double zoneLeftAmount     = (paddle.getRectangle().getWidth() / 3);
+            double zoneMiddleAmount   = (2 * paddle.getRectangle().getWidth() / 3);
+            double zoneRightAmount    = paddle.getRectangle().getWidth();
+
+            double zoneLeftA    = paddle.getRectangle().getX() + (zoneLeftAmount / 2);
+            double zoneLeftB    = paddle.getRectangle().getX() + zoneLeftAmount;
+            double zoneMiddle   = paddle.getRectangle().getX() + zoneMiddleAmount;
+            double zoneRightA   = paddle.getRectangle().getX() + (zoneRightAmount / 2);
+            double zoneRightB   = paddle.getRectangle().getX() + zoneRightAmount;
+
+            if (bottomMiddleOfBall <= zoneLeftA) {
+                // extreme left bounce
+                ball.paddleChangedAngleBy(25);
+            } else if (bottomMiddleOfBall <= zoneLeftB) {
+                ball.paddleChangedAngleBy(10);
+            } else if (bottomMiddleOfBall <= zoneMiddle) {
+                // don't change angle
+            } else if (bottomMiddleOfBall <= zoneRightA) {
+                ball.paddleChangedAngleBy(-10);
+            } else {
+                ball.paddleChangedAngleBy(-25);
             }
+
+            ball.bounceOffTheTop(paddle.getRectangle().getMinY());
+            score += 10;
         }
+//                ball.changeAngle((-10 + (int)(Math.random() * ((10 - -10) + 1))));
     }
 
     private void checkForBrickCollisions() {

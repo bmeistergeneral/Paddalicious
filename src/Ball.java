@@ -41,7 +41,8 @@ public class Ball {
         }
     }
 
-    public void changeAngle(int degrees) {
+    public void paddleChangedAngleBy(int degrees) {
+
         angle += degrees;
         cleanUpAngle();
     }
