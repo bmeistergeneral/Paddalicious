@@ -41,10 +41,33 @@ public class Ball {
         }
     }
 
-    public void paddleChangedAngleBy(int degrees) {
+    private void changeAngleBy(int degrees) {
 
         angle += degrees;
         cleanUpAngle();
+    }
+
+    public void bounceOffTopWithSpin(double atY, int angleChange) {
+
+        bounceOffTheTop(atY);
+
+        // this prevents the ball going practically horizontal
+        // after bouncing off the top of an object with spin
+        if (angle >= 310) {
+            // moving left and up
+            changeAngleBy(angleChange);
+
+            if (angle < 310) {
+                angle = 310;
+            }
+        } else if (angle <= 50) {
+            // moving right and up
+            changeAngleBy(angleChange);
+
+            if (angle > 50) {
+                angle = 50;
+            }
+        }
     }
 
     public void bounceOffTheLeft(double atX) {
