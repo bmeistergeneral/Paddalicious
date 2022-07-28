@@ -16,6 +16,7 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
     private int score;
     private Timer timer;
     private int timerDuration = 6;
+    private double ballSpeedIncreaseAmount = 0.025;
 
     private boolean isAlive = true;
 
@@ -105,7 +106,6 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
         // for debugging
 //        drawGrid(g);
-
     }
 
     private void drawGrid(Graphics g) {
@@ -180,7 +180,15 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
             score += 10;
         }
-//                ball.changeAngle((-10 + (int)(Math.random() * ((10 - -10) + 1))));
+    }
+
+    private void processBrickHit(Brick brick) {
+
+        boolean wasDestroyed = brick.brickWasHit();
+
+        if (wasDestroyed) {
+            ball.increaseSpeed(ballSpeedIncreaseAmount);
+        }
     }
 
     private void checkForBrickCollisions() {
@@ -200,28 +208,28 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
                     // ball approaching the brick from the top
                     if (brick.getRectangle().contains(bottomOfBall)) {
                         ball.bounceOffTheTop(brick.getRectangle().getMinY());
-                        brick.brickWasHit();
+                        processBrickHit(brick);
                         score += 100;
                     }
 
                     // ball approaching the brick from the left
                     if (brick.getRectangle().contains(rightOfBall)) {
                         ball.bounceOffTheLeft(brick.getRectangle().getMinX());
-                        brick.brickWasHit();
+                        processBrickHit(brick);
                         score += 100;
                     }
 
                     // ball approaching the brick from the right
                     if (brick.getRectangle().contains(leftOfBall)) {
                         ball.bounceOffTheRight(brick.getRectangle().getMaxX());
-                        brick.brickWasHit();
+                        processBrickHit(brick);
                         score += 100;
                     }
 
                     // ball approaching the brick from the bottom
                     if (brick.getRectangle().contains(topOfBall)) {
                         ball.bounceOffTheBottom(brick.getRectangle().getMaxY());
-                        brick.brickWasHit();
+                        processBrickHit(brick);
                         score += 100;
                     }
                 }

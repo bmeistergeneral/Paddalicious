@@ -21,10 +21,12 @@ public class Brick {
         return lives == 0;
     }
 
-    public void brickWasHit() {
+    public boolean brickWasHit() {
         if (lives > 0) {
             lives -= 1;
         }
+
+        return isDestroyed();
     }
 
     public Color getColor() {
