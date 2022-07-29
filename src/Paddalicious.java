@@ -11,14 +11,22 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
     private Paddle paddle;
     private Ball ball;
     private ArrayList<Brick> bricks;
+    private int score;
+
+    private enum GameState {
+        PLAYING,
+        DEAD,
+        WON
+    }
+
+    private GameState gameState = GameState.PLAYING;
+
     private int gameWidth;
     private int gameHeight;
-    private int score;
-    private Timer timer;
-    private int timerDuration = 6;
     private double ballSpeedIncreaseAmount = 0.025;
 
-    private boolean isAlive = true;
+    private Timer timer;
+    private int timerDuration = 6;
 
     public Paddalicious(int gameWidth, int gameHeight) {
         this.gameWidth = gameWidth;
@@ -44,8 +52,8 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         int brickWidth = (gameWidth / columns) - (brickMargin);
         int brickHeight = 30;
 
-        for (int j = 1; j<=rows; j++) {
-            for (int i = 1; i<=columns; i++) {
+        for (int j = 1; j <= rows; j++) {
+            for (int i = 1; i <= columns; i++) {
                 int tempX = (i * brickMargin) + ((i - 1) * brickWidth) - (brickMargin / 2);
                 int tempY = (j * brickMargin) + ((j - 1) * brickHeight);
 
@@ -75,7 +83,7 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
     public void paint(Graphics g) {
         // Background
         g.setColor(Color.white);
-        g.fillRect(0,0,800,600);
+        g.fillRect(0, 0, 800, 600);
 
         g.setColor(Color.black);
         g.drawString("Score: " + score, 2, gameHeight - 26);
@@ -86,17 +94,25 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         g.fillRect(tempPaddleRect.x, tempPaddleRect.y, tempPaddleRect.width, tempPaddleRect.height);
 
         // Ball
-        if (isAlive) {
-            g.setColor(Color.BLUE);
-            g.fillOval(ball.getX(),ball.getY(), ball.getDiameter(), ball.getDiameter());
-        } else {
-            g.setColor(Color.black);
-            g.setFont(new Font("TimesRoman", Font.PLAIN, 30));
-            g.drawString("You Dead!", gameWidth / 2, gameHeight / 2);
+        switch (gameState) {
+            case PLAYING:
+                g.setColor(Color.BLUE);
+                g.fillOval(ball.getX(), ball.getY(), ball.getDiameter(), ball.getDiameter());
+                break;
+            case DEAD:
+                g.setColor(Color.black);
+                g.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+                g.drawString("You Dead!", gameWidth / 2, gameHeight / 2);
+                break;
+            case WON:
+                g.setColor(Color.black);
+                g.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+                g.drawString("You Da Boss!", gameWidth / 2, gameHeight / 2);
+                break;
         }
 
         // Bricks
-        for (Brick brick: bricks) {
+        for (Brick brick : bricks) {
             if (!brick.isDestroyed()) {
                 g.setColor(brick.getColor());
                 Rectangle tempBrickRect = brick.getRectangle();
@@ -104,19 +120,19 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
             }
         }
 
-        // for debugging
-//        drawGrid(g);
     }
 
-    private void drawGrid(Graphics g) {
-        for (int i = 0; i < gameWidth; i++) {
 
-            if (i % 100 == 0) {
-                g.setColor(Color.black);
-                g.drawLine(i, 0, i, gameHeight);
-            }
-        }
-    }
+    //  private void drawGrid(Graphics g) {
+    // for (int i = 0; i < gameWidth; i++) {
+
+    // if(i %100==0)
+
+
+    // g.setColor(Color.black);
+    // g.drawLine(i, 0, i, gameHeight);
+
+
 
     public void mouseMoved(MouseEvent e) {
         paddle.setX(e.getX(), 0, gameWidth);
@@ -146,7 +162,7 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         // pit
         if (ball.getY() >= gameHeight) {
             // you dead!
-            isAlive = false;
+            gameState = GameState.DEAD;
             timer.stop();
         }
     }
@@ -237,14 +253,31 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         }
     }
 
+    private boolean didWin() {
+
+        int numOfBricksLeft = bricks.size();
+
+        for (Brick brick : bricks) {
+            if (brick.isDestroyed()) {
+                numOfBricksLeft -= 1;
+            }
+        }
+
+        return numOfBricksLeft < 1;
+    }
+
     public void actionPerformed(ActionEvent e) {
 
-        if (isAlive) {
+        if (gameState == GameState.PLAYING) {
             timer.start();
             ball.update(timerDuration);
             checkForWallCollisions();
             checkForPaddleCollisions();
             checkForBrickCollisions();
+
+            if (didWin()) {
+                gameState = GameState.WON;
+            }
         }
 
         repaint();
