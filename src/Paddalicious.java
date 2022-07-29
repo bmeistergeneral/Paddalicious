@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class Paddalicious extends JPanel implements MouseMotionListener, ActionListener {
 
     private Paddle paddle;
-    private Ball ball;
+    private ArrayList<Ball> balls;
     private ArrayList<Brick> bricks;
     private int score;
 
@@ -41,7 +41,12 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
         // create the paddle and ball
         paddle = new Paddle(paddleRectangle);
-        ball = new Ball(400, 240, 20);
+
+        balls = new ArrayList<Ball>(2);
+
+        Ball ball = new Ball(400, 240, 20);
+
+        balls.add(ball);
 
         // create the bricks
         bricks = new ArrayList<Brick>(32);
@@ -97,7 +102,10 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         switch (gameState) {
             case PLAYING:
                 g.setColor(Color.BLUE);
-                g.fillOval(ball.getX(), ball.getY(), ball.getDiameter(), ball.getDiameter());
+
+                for (Ball ball : balls) {
+                    g.fillOval(ball.getX(), ball.getY(), ball.getDiameter(), ball.getDiameter());
+                }
                 break;
             case DEAD:
                 g.setColor(Color.black);
@@ -119,7 +127,6 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
                 g.fillRect(tempBrickRect.x, tempBrickRect.y, tempBrickRect.width, tempBrickRect.height);
             }
         }
-
     }
 
 
@@ -144,26 +151,29 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
     private void checkForWallCollisions() {
 
-        // left wall
-        if (ball.getX() <= 0) {
-            ball.bounceOffTheRight(0);
-        }
+        for (Ball ball : balls) {
 
-        // right wall
-        if (ball.getX() + ball.getDiameter() >= gameWidth) {
-            ball.bounceOffTheLeft(gameWidth);
-        }
+            // left wall
+            if (ball.getX() <= 0) {
+                ball.bounceOffTheRight(0);
+            }
 
-        // ceiling
-        if (ball.getY() <= 0) {
-            ball.bounceOffTheBottom(0);
-        }
+            // right wall
+            if (ball.getX() + ball.getDiameter() >= gameWidth) {
+                ball.bounceOffTheLeft(gameWidth);
+            }
 
-        // pit
-        if (ball.getY() >= gameHeight) {
-            // you dead!
-            gameState = GameState.DEAD;
-            timer.stop();
+            // ceiling
+            if (ball.getY() <= 0) {
+                ball.bounceOffTheBottom(0);
+            }
+
+            // pit
+            if (ball.getY() >= gameHeight) {
+                // you dead!
+                gameState = GameState.DEAD;
+                timer.stop();
+            }
         }
     }
 
@@ -172,33 +182,36 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
         int maxSpinDegrees = 25;
         double halfOfPaddleWidth = (paddle.getRectangle().getWidth() / 2);
 
-        if (ball.getRectangle().intersects(paddle.getRectangle())) {
+        for (Ball ball : balls) {
 
-            double bottomMiddleOfBall = ball.getX() + (ball.getDiameter() / 2);
+            if (ball.getRectangle().intersects(paddle.getRectangle())) {
 
-            double middleOfPaddle = paddle.getRectangle().getX() + halfOfPaddleWidth;
+                double bottomMiddleOfBall = ball.getX() + (ball.getDiameter() / 2);
 
-            double difference = bottomMiddleOfBall - middleOfPaddle;
+                double middleOfPaddle = paddle.getRectangle().getX() + halfOfPaddleWidth;
 
-            if (difference > 0 && difference > halfOfPaddleWidth) {
-                difference = halfOfPaddleWidth;
+                double difference = bottomMiddleOfBall - middleOfPaddle;
+
+                if (difference > 0 && difference > halfOfPaddleWidth) {
+                    difference = halfOfPaddleWidth;
+                }
+
+                if (difference < 0 && difference < -halfOfPaddleWidth) {
+                    difference = -halfOfPaddleWidth;
+                }
+
+                double factor = difference / halfOfPaddleWidth;
+
+                int paddleSpinInDegrees = (int) (factor * maxSpinDegrees);
+
+                ball.bounceOffTopWithSpin(paddle.getRectangle().getMinY(), paddleSpinInDegrees);
+
+                score += 10;
             }
-
-            if (difference < 0 && difference < -halfOfPaddleWidth) {
-                difference = -halfOfPaddleWidth;
-            }
-
-            double factor = difference / halfOfPaddleWidth;
-
-            int paddleSpinInDegrees = (int) (factor * maxSpinDegrees);
-
-            ball.bounceOffTopWithSpin(paddle.getRectangle().getMinY(), paddleSpinInDegrees);
-
-            score += 10;
         }
     }
 
-    private void processBrickHit(Brick brick) {
+    private void processBrickHit(Brick brick, Ball ball) {
 
         boolean wasDestroyed = brick.brickWasHit();
 
@@ -209,44 +222,47 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
     private void checkForBrickCollisions() {
 
-        int midXOfBall = ball.getX() + (ball.getDiameter() / 2);
-        int midYOfBall = ball.getY() + (ball.getDiameter() / 2);
+        for (Ball ball : balls) {
 
-        Point topOfBall     = new Point(midXOfBall, (int) ball.getRectangle().getMinY());
-        Point bottomOfBall  = new Point(midXOfBall, (int) ball.getRectangle().getMaxY());
-        Point leftOfBall    = new Point((int) ball.getRectangle().getMinX(), midYOfBall);
-        Point rightOfBall   = new Point((int) ball.getRectangle().getMaxX(), midYOfBall);
+            int midXOfBall = ball.getX() + (ball.getDiameter() / 2);
+            int midYOfBall = ball.getY() + (ball.getDiameter() / 2);
 
-        for (Brick brick : bricks) {
-            if (!brick.isDestroyed()) {
-                if (brick.getRectangle().intersects(ball.getRectangle())) {
+            Point topOfBall     = new Point(midXOfBall, (int) ball.getRectangle().getMinY());
+            Point bottomOfBall  = new Point(midXOfBall, (int) ball.getRectangle().getMaxY());
+            Point leftOfBall    = new Point((int) ball.getRectangle().getMinX(), midYOfBall);
+            Point rightOfBall   = new Point((int) ball.getRectangle().getMaxX(), midYOfBall);
 
-                    // ball approaching the brick from the top
-                    if (brick.getRectangle().contains(bottomOfBall)) {
-                        ball.bounceOffTheTop(brick.getRectangle().getMinY());
-                        processBrickHit(brick);
-                        score += 100;
-                    }
+            for (Brick brick : bricks) {
+                if (!brick.isDestroyed()) {
+                    if (brick.getRectangle().intersects(ball.getRectangle())) {
 
-                    // ball approaching the brick from the left
-                    if (brick.getRectangle().contains(rightOfBall)) {
-                        ball.bounceOffTheLeft(brick.getRectangle().getMinX());
-                        processBrickHit(brick);
-                        score += 100;
-                    }
+                        // ball approaching the brick from the top
+                        if (brick.getRectangle().contains(bottomOfBall)) {
+                            ball.bounceOffTheTop(brick.getRectangle().getMinY());
+                            processBrickHit(brick, ball);
+                            score += 100;
+                        }
 
-                    // ball approaching the brick from the right
-                    if (brick.getRectangle().contains(leftOfBall)) {
-                        ball.bounceOffTheRight(brick.getRectangle().getMaxX());
-                        processBrickHit(brick);
-                        score += 100;
-                    }
+                        // ball approaching the brick from the left
+                        if (brick.getRectangle().contains(rightOfBall)) {
+                            ball.bounceOffTheLeft(brick.getRectangle().getMinX());
+                            processBrickHit(brick, ball);
+                            score += 100;
+                        }
 
-                    // ball approaching the brick from the bottom
-                    if (brick.getRectangle().contains(topOfBall)) {
-                        ball.bounceOffTheBottom(brick.getRectangle().getMaxY());
-                        processBrickHit(brick);
-                        score += 100;
+                        // ball approaching the brick from the right
+                        if (brick.getRectangle().contains(leftOfBall)) {
+                            ball.bounceOffTheRight(brick.getRectangle().getMaxX());
+                            processBrickHit(brick, ball);
+                            score += 100;
+                        }
+
+                        // ball approaching the brick from the bottom
+                        if (brick.getRectangle().contains(topOfBall)) {
+                            ball.bounceOffTheBottom(brick.getRectangle().getMaxY());
+                            processBrickHit(brick, ball);
+                            score += 100;
+                        }
                     }
                 }
             }
@@ -270,7 +286,11 @@ public class Paddalicious extends JPanel implements MouseMotionListener, ActionL
 
         if (gameState == GameState.PLAYING) {
             timer.start();
-            ball.update(timerDuration);
+
+            for (Ball ball : balls) {
+                ball.update(timerDuration);
+            }
+
             checkForWallCollisions();
             checkForPaddleCollisions();
             checkForBrickCollisions();
